@@ -127,13 +127,7 @@ public class DiscordChats extends JavaPlugin {
                     message += "§7➥§7§o" + referencedMessage.getMessage().getAuthor().getName();
                 }
             }
-            message +=  " §8§l>§r ";
-
-            if (hasAttachment && discordMessage.trim().isEmpty()) {
-                message += "§7§o[Image]";
-            } else {
-                message += "§f" + discordMessage;
-            }
+            message += " §8§l>§r " + (hasAttachment ? "§7§o[Attachment] §r" : "") + "§f" + discordMessage;
             String finalMessage = message;
 
             for (Player player : Bukkit.getOnlinePlayers()) {
