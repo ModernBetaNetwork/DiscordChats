@@ -41,6 +41,10 @@ public class DiscordChats extends JavaPlugin {
         getLogger().info("DiscordChats enabled with " + chatChannels.size() + " chat(s).");
     }
 
+    public static DiscordChats getInstance() {
+        return instance;
+    }
+
     public void reloadPlugin() { // TODO: this does not seem to work. previous discord ID is still in action with the pre-reload command
         DiscordSRV.api.unsubscribe(this);
         unregisterChatCommands();
@@ -115,10 +119,13 @@ public class DiscordChats extends JavaPlugin {
                 continue;
             }
 
-            String message = "§d§l" + chatName.toUpperCase() + " §r§d" + discordMessageAuthor;
+            String message = "§d§l" + chatName.toUpperCase() + " §r§9" + discordMessageAuthor;
             MessageReference referencedMessage = event.getMessage().getMessageReference();
             if (referencedMessage != null && referencedMessage.getMessage() != null) {
-                message += "§7➥§7§o" + referencedMessage.getMessage().getAuthor().getName();
+                String referenceMessageAuthor = referencedMessage.getMessage().getAuthor().getName();
+                if (!discordMessageAuthor.equals(referenceMessageAuthor)) { // don't self reply
+                    message += "§7➥§7§o" + referencedMessage.getMessage().getAuthor().getName();
+                }
             }
             message +=  " §8§l>§r ";
 
@@ -137,7 +144,7 @@ public class DiscordChats extends JavaPlugin {
         }
     }
 
-    private void runSync(Player player, Runnable task) {
+    public void runSync(Player player, Runnable task) {
         try {
             Bukkit.getRegionScheduler().run(instance, player.getLocation(), schedulerTask -> task.run());
         } catch (NoSuchMethodError e) {

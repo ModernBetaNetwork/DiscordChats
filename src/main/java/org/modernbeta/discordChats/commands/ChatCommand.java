@@ -1,11 +1,14 @@
 package org.modernbeta.discordChats.commands;
 
 import github.scarsz.discordsrv.DiscordSRV;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.modernbeta.discordChats.DiscordChats;
 
 public class ChatCommand extends Command {
+
     private final String chatName;
     private final String discordID;
 
@@ -44,15 +47,23 @@ public class ChatCommand extends Command {
             return true;
         }
 
+        // Send to all Minecraft players who have permission to view this chat
+        String formattedMessage = "§d§l" + chatName.toUpperCase() + " §r§d" + player.getName() + " §8§l>§r " + message;
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (onlinePlayer.hasPermission("discordchats." + chatName)) {
+                DiscordChats.getInstance().runSync(player, () -> player.sendMessage(formattedMessage));
+            }
+        }
+
         // Send to Discord
         if (DiscordSRV.getPlugin().getJda() != null) {
             var channel = DiscordSRV.getPlugin().getJda().getTextChannelById(discordID);
-            if (channel != null) {
-                channel.sendMessage("**" + player.getName() + "**: " + message).queue();
-                player.sendMessage("§7[You → " + chatName + "] §f" + message);
-            } else {
+            if (channel == null) {
                 player.sendMessage("§cDiscord channel not found.");
+                return true;
             }
+
+            channel.sendMessage("**" + player.getName() + "** > " + message).queue();
         }
 
         return true;
