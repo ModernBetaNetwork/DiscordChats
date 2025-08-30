@@ -1,9 +1,7 @@
 package org.modernbeta.discordChats;
 
 import github.scarsz.discordsrv.api.events.DiscordGuildMessageReceivedEvent;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.Message;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageReference;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.User;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import org.bukkit.command.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Bukkit;
@@ -97,52 +95,74 @@ public class DiscordChats extends JavaPlugin {
     @Subscribe
     public void onDiscordMessage(DiscordGuildMessageReceivedEvent event) {
         String discordMessageChatID = event.getChannel().getId();
-        String discordMessageAuthor = event.getAuthor().getName();
-        String discordMessage = event.getMessage().getContentDisplay();
+        Message messageObj = event.getMessage();
 
-        // Detect if the message has attachments (e.g., images)
-        boolean hasAttachment = !event.getMessage().getAttachments().isEmpty();
+        // Ignore blank messages with no attachments or forwards
+        if (messageObj.getContentDisplay().trim().isEmpty() &&
+                messageObj.getAttachments().isEmpty() &&
+                messageObj.getMessageReference() == null) return;
 
-        // Detect if the message is a forwarded message (Discord has message references for replies/forwards)
-        boolean isForwarded = event.getMessage().getReferencedMessage() != null;
+        // Main message author
+        User author = messageObj.getAuthor();
+        Guild guild = event.getGuild();
+        String authorNickname = getServerNickname(guild, author);
 
-        // If there is no message content and no attachments, skip it entirely
-        if (discordMessage.trim().isEmpty() && !hasAttachment && !isForwarded) {
-            return;
+        // Detect forwarded/referenced message
+        MessageReference ref = messageObj.getMessageReference();
+        String referencedNickname = null;
+        if (ref != null && ref.getMessage() != null) {
+            referencedNickname = getServerNickname(guild, ref.getMessage().getAuthor());
+            if (referencedNickname.equals(authorNickname)) {
+                referencedNickname = null; // skip self-references
+            }
         }
 
+        // Detect attachment
+        boolean hasAttachment = !messageObj.getAttachments().isEmpty();
+
+        // Iterate through all configured chats
         for (Map.Entry<String, String> entry : chatChannels.entrySet()) {
             String chatName = entry.getKey();
-            String discordChatID = entry.getValue();
+            String discordChannelId = entry.getValue();
 
-            if (!discordChatID.equals(discordMessageChatID)) {
-                continue;
+            if (!discordChannelId.equals(discordMessageChatID)) continue;
+
+            // Build Minecraft message
+            StringBuilder mcMessage = new StringBuilder();
+            mcMessage.append("§d§l").append(chatName.toUpperCase())
+                    .append(" §r§9").append(authorNickname);
+            if (referencedNickname != null) {
+                mcMessage.append("§7➥§7§o").append(referencedNickname);
             }
-
-            String message = "§d§l" + chatName.toUpperCase() + " §r§9" + discordMessageAuthor;
-            MessageReference referencedMessage = event.getMessage().getMessageReference();
-            if (referencedMessage != null && referencedMessage.getMessage() != null) {
-                String referenceMessageAuthor = referencedMessage.getMessage().getAuthor().getName();
-                if (!discordMessageAuthor.equals(referenceMessageAuthor)) { // don't self reply
-                    message += "§7➥§7§o" + referencedMessage.getMessage().getAuthor().getName();
-                }
+            mcMessage.append(" §8§l>§r ");
+            if (hasAttachment) {
+                mcMessage.append("§7§o[Attachment] §r");
             }
-            message += " §8§l>§r " + (hasAttachment ? "§7§o[Attachment] §r" : "") + "§f" + discordMessage;
-            String finalMessage = message;
+            mcMessage.append("§f").append(messageObj.getContentDisplay());
 
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.hasPermission("discordchats." + chatName)) {
-                    runSync(player, () -> player.sendMessage(finalMessage));
+            String finalMessage = mcMessage.toString();
+
+            // Send to all players with permission
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                if (onlinePlayer.hasPermission("discordchats." + chatName)) {
+                    sendMessage(onlinePlayer, finalMessage);
                 }
             }
         }
     }
 
-    public void runSync(Player player, Runnable task) {
+    private String getServerNickname(Guild guild, User user) {
+        Member member = guild.getMember(user);
+        return member != null && member.getNickname() != null ? member.getEffectiveName() : user.getEffectiveName();
+    }
+
+    public void sendMessage(Player player, String message) {
         try {
-            Bukkit.getRegionScheduler().run(instance, player.getLocation(), schedulerTask -> task.run());
-        } catch (NoSuchMethodError e) {
-            Bukkit.getScheduler().runTask(this, task);
+            // Folia-safe region scheduler
+            Bukkit.getRegionScheduler().run(this, player.getLocation(), task -> player.sendMessage(message));
+        } catch (NoSuchMethodError | UnsupportedOperationException e) {
+            // Fallback for Bukkit/Paper
+            Bukkit.getScheduler().runTask(this, () -> player.sendMessage(message));
         }
     }
 }

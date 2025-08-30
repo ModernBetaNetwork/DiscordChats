@@ -51,7 +51,7 @@ public class ChatCommand extends Command {
         String formattedMessage = "§d§l" + chatName.toUpperCase() + " §r§d" + player.getName() + " §8§l>§r " + message;
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             if (onlinePlayer.hasPermission("discordchats." + chatName)) {
-                DiscordChats.getInstance().runSync(onlinePlayer, () -> onlinePlayer.sendMessage(formattedMessage));
+                DiscordChats.getInstance().sendMessage(onlinePlayer, formattedMessage);
             }
         }
 
