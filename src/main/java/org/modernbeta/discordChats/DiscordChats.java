@@ -111,9 +111,11 @@ public class DiscordChats extends JavaPlugin {
         MessageReference ref = messageObj.getMessageReference();
         String referencedNickname = null;
         if (ref != null && ref.getMessage() != null) {
-            referencedNickname = getServerNickname(guild, ref.getMessage().getAuthor());
-            if (referencedNickname.equals(authorNickname)) {
-                referencedNickname = null; // skip self-references
+            User referencedAuthor = ref.getMessage().getAuthor();
+
+            // Get referenced user if they are human and not the same user
+            if (!referencedAuthor.isBot() && !referencedNickname.equals(authorNickname)) {
+                referencedNickname = getServerNickname(guild, referencedAuthor);
             }
         }
 
