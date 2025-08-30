@@ -1,5 +1,6 @@
 package org.modernbeta.discordChats;
 
+import github.scarsz.discordsrv.Debug;
 import github.scarsz.discordsrv.api.events.DiscordGuildMessageReceivedEvent;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import org.bukkit.command.*;
@@ -95,25 +96,25 @@ public class DiscordChats extends JavaPlugin {
     @Subscribe
     public void onDiscordMessage(DiscordGuildMessageReceivedEvent event) {
         String discordMessageChatID = event.getChannel().getId();
-        Message messageObj = event.getMessage();
+        Message message = event.getMessage();
 
-        // Ignore blank messages with no attachments or forwards
-        if (messageObj.getContentDisplay().trim().isEmpty() &&
-                messageObj.getAttachments().isEmpty() &&
-                messageObj.getMessageReference() == null) return;
+        MessageReference messageReference = message.getMessageReference();
+        boolean isReferencing = (messageReference != null && messageReference.getMessage() != null);
+        boolean isForwarding = (messageReference != null && messageReference.getMessage() == null);
+        boolean hasAttachment = !message.getAttachments().isEmpty();
+        boolean hasContent = !message.getContentDisplay().trim().isEmpty();
 
         // Main message author
-        User author = messageObj.getAuthor();
+        User author = message.getAuthor();
         Guild guild = event.getGuild();
         String authorNickname = getServerNickname(guild, author);
 
         // Detect forwarded/referenced message
-        MessageReference ref = messageObj.getMessageReference();
         String referencedNickname = null;
-        if (ref != null && ref.getMessage() != null) {
-            User referencedAuthor = ref.getMessage().getAuthor();
+        if (isReferencing) {
+            User referencedAuthor = messageReference.getMessage().getAuthor();
 
-            // Get referenced user if they are human and not the same user
+            // Skip if bot or self-reference
             if (!referencedAuthor.isBot()) {
                 referencedNickname = getServerNickname(guild, referencedAuthor);
                 if (referencedNickname.equals(authorNickname)) {
@@ -121,9 +122,6 @@ public class DiscordChats extends JavaPlugin {
                 }
             }
         }
-
-        // Detect attachment
-        boolean hasAttachment = !messageObj.getAttachments().isEmpty();
 
         // Iterate through all configured chats
         for (Map.Entry<String, String> entry : chatChannels.entrySet()) {
@@ -136,15 +134,22 @@ public class DiscordChats extends JavaPlugin {
             StringBuilder mcMessage = new StringBuilder();
             mcMessage.append("§d§l").append(chatName.toUpperCase())
                     .append(" §r§9").append(authorNickname);
-            if (referencedNickname != null) {
+
+            if (isReferencing && referencedNickname != null) {
                 mcMessage.append("§7➥§7§o").append(referencedNickname);
             }
+
             mcMessage.append(" §8§l>§r ");
+
+            if (isForwarding) {
+                mcMessage.append("§7§o[Forwarded Message] §r");
+            }
+
             if (hasAttachment) {
                 mcMessage.append("§7§o[Attachment] §r");
             }
-            mcMessage.append("§f").append(messageObj.getContentDisplay());
 
+            mcMessage.append("§f").append(message.getContentDisplay());
             String finalMessage = mcMessage.toString();
 
             // Send to all players with permission
