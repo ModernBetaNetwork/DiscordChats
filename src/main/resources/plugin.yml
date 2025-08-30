@@ -1,0 +1,13 @@
+name: DiscordChats
+main: org.modernbeta.discordChats.DiscordChats
+version: ${project.version}
+api-version: '1.21'
+folia-supported: true
+author: Modern Beta LLC
+description: Talk between Discord and Minecraft chat with easily configured chat channels!
+depend: [DiscordSRV]
+commands:
+  discordchatsreload:
+    description: Reloads the DiscordChats plugin
+    usage: /discordchatsreload
+    permission: discordchats.reload

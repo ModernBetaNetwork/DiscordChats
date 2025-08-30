@@ -1,0 +1,9 @@
+BotToken: "YOUR_DISCORD_BOT_TOKEN"
+
+DiscordChats:
+  staff:
+    discordChatID: "000000000000000000"
+  ebf:
+    discordChatID: "000000000000000000"
+  dev:
+    discordChatID: "000000000000000000"
