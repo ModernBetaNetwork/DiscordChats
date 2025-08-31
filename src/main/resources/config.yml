@@ -3,7 +3,10 @@ BotToken: "YOUR_DISCORD_BOT_TOKEN"
 DiscordChats:
   staff:
     discordChatID: "000000000000000000"
+    aliases: ["schat", "staffchat"]
   ebf:
     discordChatID: "000000000000000000"
+    aliases: ["echat", "ebfchat"]
   dev:
     discordChatID: "000000000000000000"
+    aliases: ["dchat", "devchat"]

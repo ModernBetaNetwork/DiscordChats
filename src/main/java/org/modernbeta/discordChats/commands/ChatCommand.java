@@ -7,18 +7,23 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.modernbeta.discordChats.DiscordChats;
 
+import java.util.List;
+
 public class ChatCommand extends Command {
 
     private final String chatName;
     private final String discordID;
 
-    public ChatCommand(String chatName, String discordID) {
-        super(chatName.toLowerCase() + "chat");
+    public ChatCommand(String chatName, String discordID, List<String> aliases) {
+        super(chatName.toLowerCase());
         this.chatName = chatName.toLowerCase();
         this.discordID = discordID;
         setDescription("Send a message to the " + chatName + " Discord chat.");
         setUsage("/" + getName() + " <message>");
         setPermission("discordchats." + chatName);
+        if (aliases != null && !aliases.isEmpty()) {
+            setAliases(aliases);
+        }
     }
 
     @Override

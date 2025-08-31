@@ -66,9 +66,11 @@ public class DiscordChats extends JavaPlugin {
                 String discordChatID = section.getString(chatName + ".discordChatID");
                 if (discordChatID == null) continue;
 
+                List<String> aliases = section.getStringList(chatName + ".aliases");
+
                 chatChannels.put(chatName.toLowerCase(), discordChatID);
 
-                ChatCommand command = new ChatCommand(chatName, discordChatID);
+                ChatCommand command = new ChatCommand(chatName, discordChatID, aliases);
                 commandMap.register(getDescription().getName(), command);
                 registeredCommands.add(command);
             }
