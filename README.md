@@ -2,6 +2,7 @@
 Communicate between many private Discord channels and Minecraft with easy configuration!
 - **Supported Versions: 1.20 - 1.21.x**
 - **Supported Platforms: Paper & Folia**
+- **Dependencies:** DiscordSRV
 
 ## Example usage
 config.yml:
