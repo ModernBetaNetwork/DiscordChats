@@ -102,7 +102,6 @@ public class DiscordChats extends JavaPlugin {
         boolean isReferencing = (messageReference != null && messageReference.getMessage() != null);
         boolean isForwarding = (messageReference != null && messageReference.getMessage() == null);
         boolean hasAttachment = !message.getAttachments().isEmpty();
-        boolean hasContent = !message.getContentDisplay().trim().isEmpty();
 
         // Main message author
         User author = message.getAuthor();

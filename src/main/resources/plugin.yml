@@ -1,7 +1,7 @@
 name: DiscordChats
 main: org.modernbeta.discordChats.DiscordChats
 version: ${project.version}
-api-version: '1.21'
+api-version: '1.20'
 folia-supported: true
 author: Modern Beta LLC
 description: Talk between Discord and Minecraft chat with easily configured chat channels!
