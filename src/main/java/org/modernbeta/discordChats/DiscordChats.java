@@ -133,14 +133,14 @@ public class DiscordChats extends JavaPlugin {
 
             // Build Minecraft message
             StringBuilder mcMessage = new StringBuilder();
-            mcMessage.append("§d§l").append(chatName.toUpperCase())
-                    .append(" §r§9").append(authorNickname);
+            mcMessage.append("§6§o[§b§l§o").append(chatName.toUpperCase())
+                    .append("§6§o] §r§3").append(authorNickname);
 
             if (isReferencing && referencedNickname != null) {
                 mcMessage.append("§7➥§7§o").append(referencedNickname);
             }
 
-            mcMessage.append(" §8§l>§r ");
+            mcMessage.append(" §9§l>§r ");
 
             if (isForwarding) {
                 mcMessage.append("§7§o[Forwarded Message] §r");

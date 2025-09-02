@@ -53,7 +53,7 @@ public class ChatCommand extends Command {
         }
 
         // Send to all Minecraft players who have permission to view this chat
-        String formattedMessage = "§d§l" + chatName.toUpperCase() + " §r§d" + player.getName() + " §8§l>§r " + message;
+        String formattedMessage = "§6§o[§b§l§o" + chatName.toUpperCase() + "§6§o] §r§3" + player.getName() + " §6§l>§r " + message;
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             if (onlinePlayer.hasPermission("discordchats." + chatName)) {
                 DiscordChats.getInstance().sendMessage(onlinePlayer, formattedMessage);
